@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PCore\RpcServer;
+namespace PCore\RpcMessage;
 
 use JsonSerializable;
 use function get_object_vars;
 
 /**
  * Class Error
- * @package PCore\RpcServer
- * @github https://github.com/pcore-framework/rpc-server
+ * @package PCore\RpcMessage
+ * @github https://github.com/pcore-framework/rpc-message
  */
 class Error implements JsonSerializable
 {

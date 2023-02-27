@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PCore\RpcServer;
+namespace PCore\RpcMessage;
 
 use InvalidArgumentException;
 use JsonSerializable;
-use PCore\RpcServer\Contracts\RpcServerRequestInterface;
+use PCore\RpcMessage\Contracts\ServerRequestInterface;
 
 /**
  * Class Request
- * @package PCore\RpcServer
- * @github https://github.com/pcore-framework/rpc-server
+ * @package PCore\RpcMessage
+ * @github https://github.com/pcore-framework/rpc-message
  */
 class Request implements JsonSerializable
 {
@@ -26,18 +26,10 @@ class Request implements JsonSerializable
     }
 
     /**
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return get_object_vars($this);
-    }
-
-    /**
-     * @param RpcServerRequestInterface $request
+     * @param ServerRequestInterface $request
      * @return static
      */
-    public static function createFromPsrRequest(RpcServerRequestInterface $request): static
+    public static function createFromPsrRequest(ServerRequestInterface $request): static
     {
         if (!str_contains($request->getHeaderLine('Content-Type'), 'application/json')) {
             throw new InvalidArgumentException('Неверный запрос', -32600);
@@ -47,7 +39,16 @@ class Request implements JsonSerializable
         if (!isset($parts['jsonrpc'], $parts['method'])) {
             throw new InvalidArgumentException('Ошибка синтаксического анализа', -32700);
         }
+        $request->setRpcMethod($parts['method']);
         return new static($parts['method'], $parts['params'] ?? [], $parts['id'] ?? null, $parts['jsonrpc']);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function jsonSerialize(): mixed
+    {
+        return get_object_vars($this);
     }
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PCore\RpcServer;
+namespace PCore\RpcMessage;
 
 use JsonSerializable;
 use PCore\RpcServer\Exceptions\Exception;
@@ -10,8 +10,8 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class Response
- * @package PCore\RpcServer
- * @github https://github.com/pcore-framework/rpc-server
+ * @package PCore\RpcMessage
+ * @github https://github.com/pcore-framework/rpc-message
  */
 class Response implements JsonSerializable
 {
@@ -26,14 +26,6 @@ class Response implements JsonSerializable
     }
 
     /**
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return array_filter(get_object_vars($this));
-    }
-
-    /**
      * @param ResponseInterface $response
      * @return mixed
      * @throws Exception
@@ -45,6 +37,14 @@ class Response implements JsonSerializable
         }
         $body = $response->getBody()->getContents();
         return json_decode($body, true);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function jsonSerialize(): mixed
+    {
+        return array_filter(get_object_vars($this));
     }
 
     /**

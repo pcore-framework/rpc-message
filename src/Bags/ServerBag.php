@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PCore\RpcServer\Bags;
-
-use PCore\HttpMessage\Bags\ParameterBag;
+namespace PCore\RpcMessage\Bags;
 
 /**
  * Class ServerBag
- * @package PCore\RpcServer\Bags
- * @github https://github.com/pcore-framework/json-server
+ * @package PCore\RpcMessage\Bags
+ * @github https://github.com/pcore-framework/json-message
  */
 class ServerBag extends ParameterBag
 {

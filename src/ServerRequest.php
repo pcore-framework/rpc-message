@@ -2,22 +2,19 @@
 
 declare(strict_types=1);
 
-namespace PCore\RpcServer;
+namespace PCore\RpcMessage;
 
-use PCore\HttpMessage\Bags\{HeaderBag, ParameterBag};
-use PCore\HttpMessage\Stream\StandardStream;
-use PCore\HttpMessage\Uri;
-use PCore\RpcServer\Bags\ServerBag;
-use PCore\RpcServer\Contracts\RpcServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UriInterface;
+use PCore\RpcMessage\Bags\{HeaderBag, ParameterBag, ServerBag};
+use PCore\RpcMessage\Contracts\ServerRequestInterface;
+use PCore\RpcMessage\Stream\StandardStream;
+use Psr\Http\Message\{StreamInterface, UriInterface};
 
 /**
- * Class RpcServerRequest
- * @package PCore\RpcServer
- * @github https://github.com/pcore-framework/json-server
+ * Class ServerRequest
+ * @package PCore\RpcMessage
+ * @github https://github.com/pcore-framework/json-message
  */
-class RpcServerRequest implements RpcServerRequestInterface
+class ServerRequest implements ServerRequestInterface
 {
 
     /**
@@ -40,10 +37,12 @@ class RpcServerRequest implements RpcServerRequestInterface
      */
     protected ?StreamInterface $body = null;
 
+    protected string $rpcMethod;
+
     public function __construct(
         protected string|UriInterface $uri,
-        protected string              $method, array $headers = [],
-        string                        $protocolVersion = '1.1'
+        protected string              $method,
+        array                         $headers = []
     )
     {
         $this->serverParams = new ServerBag();
@@ -56,7 +55,7 @@ class RpcServerRequest implements RpcServerRequestInterface
      * @param array $attributes
      * @return static
      */
-    public static function createRequest($request, array $attributes = []): RpcServerRequestInterface
+    public static function createRequest($request, array $attributes = []): ServerRequestInterface
     {
         $server = $request->server;
         $header = $request->header;
@@ -100,10 +99,7 @@ class RpcServerRequest implements RpcServerRequestInterface
         if (!$hasQuery && isset($server['query_string'])) {
             $uri = $uri->withQuery($server['query_string']);
         }
-        $protocol = isset($server['server_protocol'])
-            ? str_replace('HTTP/', '', $server['server_protocol'])
-            : '1.1';
-        $psrRequest = new static($uri, $request->getMethod(), $header, $protocol);
+        $psrRequest = new static($uri, $request->getMethod(), $header);
         $psrRequest->serverParams = new ServerBag($server);
         $psrRequest->attributes = new ParameterBag($attributes);
         $psrRequest->body = StandardStream::create((string)$request->getContent());
@@ -111,11 +107,11 @@ class RpcServerRequest implements RpcServerRequestInterface
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function getServerParams(): array
+    public function getMethod(): string
     {
-        return $this->serverParams->all();
+        return $this->method;
     }
 
     /**
@@ -124,36 +120,6 @@ class RpcServerRequest implements RpcServerRequestInterface
     public function getHeaders(): array
     {
         return $this->headers->all();
-    }
-
-    /**
-     * @param $name
-     * @return bool|null
-     */
-    public function hasHeader($name): ?bool
-    {
-        return $this->headers->has($name);
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function getHeader($name): mixed
-    {
-        return $this->headers->get($name);
-    }
-
-    /**
-     * @param $name
-     * @return string
-     */
-    public function getHeaderLine($name): string
-    {
-        if ($this->hasHeader($name)) {
-            return implode(', ', $this->getHeader($name));
-        }
-        return '';
     }
 
     /**
@@ -167,9 +133,18 @@ class RpcServerRequest implements RpcServerRequestInterface
     /**
      * @return string
      */
-    public function getMethod(): string
+    public function getRpcMethod(): string
     {
-        return $this->method;
+        return $this->rpcMethod;
+    }
+
+    /**
+     * @param string $rpcMethod
+     * @return void
+     */
+    public function setRpcMethod(string $rpcMethod): void
+    {
+        $this->rpcMethod = $rpcMethod;
     }
 
     /**
@@ -189,11 +164,41 @@ class RpcServerRequest implements RpcServerRequestInterface
     }
 
     /**
-     * @return UriInterface
+     * @param string $name
+     * @return string
      */
-    public function getUri(): UriInterface
+    public function getHeaderLine(string $name): string
     {
-        return $this->uri;
+        if ($this->hasHeader($name)) {
+            return implode(', ', $this->getHeader($name));
+        }
+        return '';
+    }
+
+    /**
+     * @param string $name
+     * @return bool|null
+     */
+    public function hasHeader(string $name): ?bool
+    {
+        return $this->headers->has($name);
+    }
+
+    /**
+     * @param string $name
+     * @return mixed
+     */
+    public function getHeader(string $name): mixed
+    {
+        return $this->headers->get($name);
+    }
+
+    /**
+     * @return array
+     */
+    public function getServerParams(): array
+    {
+        return $this->serverParams->all();
     }
 
     /**
@@ -207,6 +212,37 @@ class RpcServerRequest implements RpcServerRequestInterface
             $url .= '?' . $query;
         }
         return $url;
+    }
+
+    /**
+     * @return UriInterface
+     */
+    public function getUri(): UriInterface
+    {
+        return $this->uri;
+    }
+
+    /**
+     * @param string $name
+     * @param $value
+     * @return ServerRequestInterface
+     */
+    public function withAttribute(string $name, $value): ServerRequestInterface
+    {
+        $new = clone $this;
+        $new->attributes = clone $this->attributes;
+        $new->attributes->set($name, $value);
+        return $new;
+    }
+
+    /**
+     * @param string $name
+     * @param null $default
+     * @return mixed|null
+     */
+    public function getAttribute(string $name, $default = null): mixed
+    {
+        return $this->attributes->get($name, $default);
     }
 
 }

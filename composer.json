@@ -1,6 +1,6 @@
 {
-    "name": "pcore/rpc-server",
-    "description": "The RPC Server component for PCore",
+    "name": "pcore/rpc-message",
+    "description": "The RPC Message component for PCore",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -10,7 +10,7 @@
         "framework",
         "pcore-component"
     ],
-    "homepage": "https://github.com/pcore-framework/rpc-server",
+    "homepage": "https://github.com/pcore-framework/rpc-message",
     "authors": [
         {
             "name": "Magomedcoder",
@@ -19,18 +19,14 @@
     ],
     "require": {
         "php": "^8.0",
-        "psr/http-message": "^1.0",
-        "pcore/http-message": "v1.6.*",
-        "pcore/json-rpc": "v1.2.*"
+        "psr/http-message": "^1.0"
     },
     "autoload": {
         "psr-4": {
-            "PCore\\RpcServer\\": "src/"
+            "PCore\\RpcMessage\\": "src/"
         }
     },
-    "extra": {
-        "pcore": {
-            "config": "PCore\\RpcServer\\ConfigProvider"
-        }
+    "suggest": {
+        "pcore/utils": "Требуется utils."
     }
 }
